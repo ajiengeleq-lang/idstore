@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>IDRare - Beli ID Premium</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',sans-serif; }
+        
+        :root {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #0f1622;
+            --bg-card: #151e2c;
+            --bg-card-hover: #1a2435;
+            --text-primary: #ffffff;
+            --text-secondary: #8b9bb0;
+            --accent-blue: #2c7da0;
+            --accent-cyan: #4ecdc4;
+            --accent-glow: rgba(78,205,196,0.3);
+            --success: #2ecc71;
+            --warning: #f39c12;
+            --danger: #e74c3c;
+            --border-color: rgba(78,205,196,0.15);
+        }
+        
+        body { background: var(--bg-primary); min-height:100vh; padding:0.8rem 0.8rem 70px 0.8rem; }
+        .container { max-width:600px; margin:0 auto; }
+        
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(78,205,196,0.3); }
+            50% { text-shadow: 0 0 15px rgba(78,205,196,0.6); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.05); opacity: 0.8; }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .navbar-top { background: var(--bg-card); border-radius:1.2rem; padding:0.6rem 1rem; display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem; border:1px solid var(--border-color); backdrop-filter:blur(10px); }
+        
+        .logo h1 { font-size:1.3rem; background: linear-gradient(135deg, #4ecdc4, #2c7da0); -webkit-background-clip:text; background-clip:text; color:transparent; animation: glow 2s infinite; }
+        .logo span { font-size:0.7rem; color: var(--text-secondary); }
+        
+        .balance-card { background: linear-gradient(135deg, #1a2a3a, #0f1a24); padding:0.4rem 0.9rem; border-radius:30px; color: white; font-weight:600; display:flex; align-items:center; gap:0.4rem; font-size:0.8rem; border:1px solid var(--accent-blue); }
+        .balance-card i { color: var(--accent-cyan); animation: pulse 2s infinite; }
+        
+        .cart-icon { position:relative; background: var(--bg-secondary); width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:0.3s; border:1px solid var(--border-color); }
+        .cart-icon:hover { background: var(--accent-blue); transform: scale(1.05); }
+        .cart-badge { position:absolute; top:-5px; right:-5px; background: var(--accent-cyan); color: var(--bg-primary); border-radius:50%; width:18px; height:18px; font-size:0.6rem; display:flex; align-items:center; justify-content:center; font-weight:bold; }
+        
+        .user-avatar { background: var(--bg-secondary); width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:0.3s; border:1px solid var(--border-color); }
+        .user-avatar:hover { background: var(--accent-blue); transform: scale(1.05); }
+        
+        .product-grid { display:flex; flex-direction:column; gap:0.7rem; margin-bottom:1rem; }
+        .product-card { background: var(--bg-card); border-radius:1rem; display:flex; align-items:center; justify-content:space-between; padding:0.9rem 1.1rem; transition:0.3s; border:1px solid var(--border-color); animation: slideIn 0.3s ease; animation-fill-mode: both; }
+        .product-card.sold-out { opacity: 0.6; }
+        .product-card.sold-out:hover { transform: none; }
+        .product-card:hover { background: var(--bg-card-hover); transform: translateY(-2px); border-color: var(--accent-blue); box-shadow: 0 5px 20px rgba(78,205,196,0.15); }
+        
+        .product-info { flex:1; }
+        .product-id { font-size:1rem; font-weight:700; color: var(--text-primary); letter-spacing:0.5px; display:flex; align-items:center; flex-wrap:wrap; gap:0.5rem; }
+        .product-price { font-size:0.85rem; font-weight:600; color: var(--accent-cyan); margin-top:0.2rem; }
+        
+        .stock-badge { border-radius:20px; padding:0.2rem 0.5rem; font-size:0.6rem; display:inline-block; }
+        .stock-available { background: rgba(46,204,113,0.2); border:1px solid #2ecc71; color:#2ecc71; }
+        .stock-soldout { background: rgba(231,76,60,0.2); border:1px solid #e74c3c; color:#e74c3c; }
+        
+        .add-cart-btn { background: linear-gradient(135deg, #1a2a3a, #0f1a24); width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; color: var(--text-primary); cursor:pointer; transition:0.3s; border:1px solid var(--border-color); }
+        .add-cart-btn:hover { background: var(--accent-blue); transform: scale(1.1); box-shadow: 0 0 15px var(--accent-glow); }
+        .add-cart-btn:active { transform: scale(0.95); }
+        .add-cart-btn.disabled, .add-cart-btn:disabled { opacity: 0.5; cursor: not-allowed; background: var(--bg-secondary); transform: none; }
+        
+        .bottom-nav { position:fixed; bottom:0; left:0; right:0; background: var(--bg-card); backdrop-filter:blur(10px); display:flex; justify-content:space-around; align-items:center; padding:0.5rem 1rem; border-top:1px solid var(--border-color); z-index:100; }
+        .nav-item { display:flex; flex-direction:column; align-items:center; gap:0.2rem; color: var(--text-secondary); cursor:pointer; transition:0.3s; font-size:0.65rem; padding:0.3rem 0.8rem; border-radius:2rem; }
+        .nav-item i { font-size:1.2rem; transition:0.3s; }
+        .nav-item:hover { color: var(--accent-cyan); }
+        .nav-item.active { color: var(--accent-cyan); background: rgba(78,205,196,0.1); }
+        .nav-item.active i { transform: translateY(-2px); }
+        
+        .cart-overlay { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); backdrop-filter:blur(5px); visibility:hidden; opacity:0; transition:0.3s; z-index:200; }
+        .cart-sidebar { position:fixed; right:0; top:0; width:85%; max-width:350px; height:100%; background: var(--bg-card); display:flex; flex-direction:column; transform:translateX(100%); transition:transform 0.3s ease; z-index:201; border-left:1px solid var(--border-color); }
+        .cart-overlay.active { visibility:visible; opacity:1; }
+        .cart-sidebar.active { transform:translateX(0); }
+        .cart-header { display:flex; justify-content:space-between; align-items:center; padding:1rem; border-bottom:1px solid var(--border-color); }
+        .cart-header h3 { color: var(--text-primary); font-size:1rem; }
+        .cart-items { flex:1; overflow-y:auto; padding:0.5rem 1rem; }
+        .cart-item { display:flex; justify-content:space-between; align-items:center; padding:0.8rem 0; border-bottom:1px solid var(--border-color); }
+        .cart-item-info { flex:1; }
+        .cart-item-id { font-weight:600; font-size:0.9rem; color: var(--text-primary); }
+        .cart-item-price { font-size:0.75rem; color: var(--accent-cyan); }
+        .cart-item-qty { display:flex; align-items:center; gap:0.5rem; }
+        .qty-btn { background: var(--bg-secondary); width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:1px solid var(--border-color); color: var(--text-primary); transition:0.2s; }
+        .qty-btn:hover { background: var(--accent-blue); }
+        .cart-total { padding:1rem; border-top:1px solid var(--border-color); display:flex; justify-content:space-between; font-weight:700; color: var(--text-primary); }
+        .btn-checkout { background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); border:none; padding:0.8rem; margin:0.5rem 1rem 1rem 1rem; border-radius:2rem; color: white; font-weight:bold; cursor:pointer; transition:0.3s; }
+        .btn-checkout:hover { transform: translateY(-2px); box-shadow: 0 5px 20px rgba(78,205,196,0.3); }
+        .btn-clear { background: transparent; border:1px solid var(--danger); padding:0.5rem 1rem; border-radius:2rem; color: var(--danger); font-size:0.8rem; cursor:pointer; margin:0 1rem; transition:0.3s; }
+        
+        .modal { position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:300; visibility:hidden; opacity:0; transition:0.3s; }
+        .modal.active { visibility:visible; opacity:1; }
+        .modal-content { background: var(--bg-card); border-radius:1.5rem; padding:1.2rem; width:90%; max-width:400px; max-height:80vh; overflow-y:auto; border:1px solid var(--border-color); animation: slideIn 0.3s ease; }
+        
+        .profile-field { margin-bottom:0.8rem; padding:0.7rem; background: var(--bg-secondary); border-radius:0.8rem; border:1px solid var(--border-color); }
+        .profile-field label { font-size:0.65rem; color: var(--text-secondary); display:block; }
+        .profile-field .value { font-size:0.9rem; font-weight:500; color: var(--text-primary); display:flex; justify-content:space-between; align-items:center; }
+        .credentials-box { background: var(--bg-secondary); border:1px solid var(--accent-blue); border-radius:1rem; padding:1rem; margin:1rem 0; }
+        .credentials-box p { color: var(--text-primary); margin:0.5rem 0; }
+        .qris-box { text-align:center; padding:1rem; background: var(--bg-secondary); border-radius:1rem; margin:0.5rem 0; }
+        #qrcode { display:flex; justify-content:center; margin:0.5rem 0; background: white; padding:0.5rem; border-radius:1rem; }
+        .toast { position:fixed; bottom:80px; left:20px; background: var(--bg-card); color: var(--text-primary); padding:0.6rem 1rem; border-radius:40px; z-index:400; opacity:0; transition:0.3s; pointer-events:none; font-size:0.75rem; border:1px solid var(--accent-blue); }
+        .toast.show { opacity:1; }
+        .history-list { max-height:300px; overflow-y:auto; }
+        .history-item { padding:0.6rem; border-bottom:1px solid var(--border-color); font-size:0.75rem; color: var(--text-secondary); }
+        .status-success { color: var(--success); }
+        .status-pending { color: var(--warning); }
+        .btn-primary { background: linear-gradient(135deg, var(--accent-blue), var(--accent-cyan)); width:100%; padding:0.7rem; border:none; border-radius:1rem; color: white; font-weight:bold; cursor:pointer; transition:0.3s; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(78,205,196,0.3); }
+        .btn-secondary { background: var(--bg-secondary); width:100%; padding:0.7rem; border:1px solid var(--accent-blue); border-radius:1rem; color: var(--accent-cyan); font-weight:bold; cursor:pointer; transition:0.3s; }
+        .btn-outline { background: transparent; border:1px solid var(--border-color); padding:0.7rem; border-radius:1rem; color: var(--text-secondary); cursor:pointer; width:100%; margin-top:0.5rem; transition:0.3s; }
+        .btn-whatsapp { display:block; background: #25D366; text-decoration:none; color: white; padding:0.7rem; border-radius:1rem; text-align:center; margin:0.5rem 0; }
+        .contact-item { display:flex; align-items:center; gap:0.8rem; padding:0.7rem; background: var(--bg-secondary); border-radius:0.8rem; margin-bottom:0.5rem; font-size:0.8rem; color: var(--text-primary); }
+        .about-content { font-size:0.8rem; line-height:1.5; color: var(--text-secondary); }
+        .amount-input { width:100%; padding:0.8rem; border-radius:1rem; border:1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-primary); text-align:center; margin:0.8rem 0; }
+        .amount-input:focus { outline:none; border-color: var(--accent-cyan); }
+        .toggle-password { background:none; border:none; color:var(--accent-cyan); cursor:pointer; }
+        
+        @media (max-width:480px) { .product-id { font-size:0.85rem; } .product-price { font-size:0.75rem; } }
+    </style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toastMsg" class="toast"></div>
+
+<script>
+    // ==================== DATA ID YANG DIJUAL (HARGA 5.000 SEMUA) ====================
+    // Stok lama dihapus, hanya 11 produk baru dengan harga Rp5.000
+    let PRODUCTS = [
+        { id: 1, account_id: "15755452222", price: 5000, uid: "4896024716", password: "KIBGS_S4AGD_xSaeed_ZUCOB", name: "ID Rare 15755452222", stock: 1 },
+        { id: 2, account_id: "15755456788", price: 5000, uid: "4896030478", password: "KIBGS_W66PQ_xSaeed_TIHNE", name: "ID Rare 15755456788", stock: 1 },
+        { id: 3, account_id: "15755457777", price: 5000, uid: "4896031596", password: "KIBGS_J8DOE_xSaeed_H5PUY", name: "ID Rare 15755457777", stock: 1 },
+        { id: 4, account_id: "15755511117", price: 5000, uid: "4896085810", password: "KIBGS_RXTUH_xSaeed_TNDEI", name: "ID Rare 15755511117", stock: 1 },
+        { id: 5, account_id: "15755550768", price: 5000, uid: "4896124568", password: "KIBGS_AO5BI_xSaeed_KJ152", name: "ID Rare 15755550768", stock: 1 },
+        { id: 6, account_id: "15755551482", price: 5000, uid: "4896126609", password: "KIBGS_QEZC5_xSaeed_URTFI", name: "ID Rare 15755551482", stock: 1 },
+        { id: 7, account_id: "15755551417", price: 5000, uid: "4896126641", password: "KIBGS_32U9S_xSaeed_AO5OX", name: "ID Rare 15755551417", stock: 1 },
+        { id: 8, account_id: "15755551516", price: 5000, uid: "4896126726", password: "KIBGS_4Y5PV_xSaeed_UO132", name: "ID Rare 15755551516", stock: 1 },
+        { id: 9, account_id: "15755551468", price: 5000, uid: "4896126642", password: "KIBGS_2EX3A_xSaeed_ZLSJQ", name: "ID Rare 15755551468", stock: 1 },
+        { id: 10, account_id: "15755551558", price: 5000, uid: "4896126697", password: "KIBGS_8XSXY_xSaeed_7TY3L", name: "ID Rare 15755551558", stock: 1 },
+        { id: 11, account_id: "15755551566", price: 5000, uid: "4896126721", password: "KIBGS_XWRF1_xSaeed_9Z9PI", name: "ID Rare 15755551566", stock: 1 }
+    ];
+
+    const QRIS_MERCHANT_BASE = "00020101021126760024ID.CO.SPEEDCASH.MERCHANT01189360081530004269490215ID10260042694980303UKE51440014ID.CO.QRIS.WWW0215ID10265195694400303UKE5204533153033605802ID5918TOKO MUDAH RASEUKI6010ACEH UTARA61052437662330509S3694587001091272589620703A0163041321";
+    const ADMIN_WHATSAPP = "6285138712082";
+    const ADMIN_EMAIL = "admin@idstore.com";
+    const ADMIN_INSTAGRAM = "@idstore_official";
+
+    let currentUser = null;
+    let currentTransaction = null;
+    let currentPage = "home";
+    let showPassword = false;
+    let cart = [];
+
+    function saveStocksToLocal() {
+        localStorage.setItem('product_stocks', JSON.stringify(PRODUCTS.map(p => ({ id: p.id, stock: p.stock }))));
+    }
+
+    function loadStocksFromLocal() {
+        let savedStocks = localStorage.getItem('product_stocks');
+        if(savedStocks) {
+            let stocks = JSON.parse(savedStocks);
+            for(let stock of stocks) {
+                let product = PRODUCTS.find(p => p.id === stock.id);
+                if(product) product.stock = stock.stock;
+            }
+        }
+    }
+
+    function reduceStock(productId) {
+        let product = PRODUCTS.find(p => p.id === productId);
+        if(product && product.stock > 0) {
+            product.stock--;
+            saveStocksToLocal();
+            return true;
+        }
+        return false;
+    }
+
+    function showToast(msg, bg='#151e2c') {
+        let t = document.getElementById('toastMsg');
+        t.textContent = msg;
+        t.style.backgroundColor = bg;
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2500);
+    }
+    function formatRupiah(amount) { return 'Rp ' + amount.toLocaleString('id-ID'); }
+
+    // Cart Functions
+    function addToCart(product) {
+        if(product.stock <= 0) {
+            showToast(`${product.account_id} sudah habis (SOLD OUT)!`, '#e74c3c');
+            return;
+        }
+        
+        let existing = cart.find(item => item.id === product.id);
+        if(existing) {
+            if(existing.quantity >= product.stock) {
+                showToast(`Stok ${product.account_id} hanya ${product.stock}`, '#f39c12');
+                return;
+            }
+            existing.quantity++;
+        } else {
+            cart.push({ ...product, quantity: 1 });
+        }
+        updateCartBadge();
+        saveCartToLocal();
+        showToast(`${product.account_id} ditambahkan ke keranjang`, '#2c7da0');
+    }
+
+    function removeFromCart(productId) {
+        cart = cart.filter(item => item.id !== productId);
+        updateCartBadge();
+        saveCartToLocal();
+        if(currentPage === 'cart') renderMainApp();
+        else updateCartBadge();
+    }
+
+    function updateQuantity(productId, delta) {
+        let item = cart.find(i => i.id === productId);
+        if(item) {
+            let product = PRODUCTS.find(p => p.id === productId);
+            let newQty = item.quantity + delta;
+            if(newQty <= 0) {
+                cart = cart.filter(i => i.id !== productId);
+            } else if(product && newQty <= product.stock) {
+                item.quantity = newQty;
+            } else {
+                showToast(`Stok ${product.account_id} hanya ${product.stock}`, '#f39c12');
+                return;
+            }
+            updateCartBadge();
+            saveCartToLocal();
+            if(currentPage === 'cart') renderMainApp();
+        }
+    }
+
+    function getCartTotal() { return cart.reduce((sum, item) => sum + (item.price * item.quantity), 0); }
+    
+    function updateCartBadge() {
+        let totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        let badge = document.getElementById('cartBadge');
+        if(badge) badge.textContent = totalItems;
+        if(currentUser) {
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            let index = users.findIndex(u => u.username === currentUser.username);
+            if(index !== -1) { users[index].cart = cart; localStorage.setItem('users', JSON.stringify(users)); currentUser.cart = cart; localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+        }
+    }
+    
+    function saveCartToLocal() {
+        if(currentUser) {
+            let users = JSON.parse(localStorage.getItem('users') || '[]');
+            let index = users.findIndex(u => u.username === currentUser.username);
+            if(index !== -1) { users[index].cart = cart; localStorage.setItem('users', JSON.stringify(users)); currentUser.cart = cart; localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+        } else { localStorage.setItem('guest_cart', JSON.stringify(cart)); }
+    }
+    
+    function loadCart() {
+        if(currentUser && currentUser.cart) cart = currentUser.cart;
+        else { let savedCart = localStorage.getItem('guest_cart'); if(savedCart) cart = JSON.parse(savedCart); else cart = []; }
+        updateCartBadge();
+    }
+
+    // User Auth
+    function registerUser(username, password, phone, email) {
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        if(users.find(u => u.username === username)) { showToast('Username sudah terdaftar!', '#e74c3c'); return false; }
+        users.push({ username, password, phone: phone || '', email: email || '', balance: 0, depositHistory: [], purchaseHistory: [], cart: [], createdAt: new Date().toISOString() });
+        localStorage.setItem('users', JSON.stringify(users));
+        showToast('Registrasi berhasil! Silakan login.', '#2ecc71');
+        return true;
+    }
+    
+    function loginUser(username, password) {
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let user = users.find(u => u.username === username && u.password === password);
+        if(user) {
+            currentUser = user;
+            if(user.cart) cart = user.cart; else cart = [];
+            updateCartBadge();
+            localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            showToast(`Selamat datang, ${username}!`, '#2ecc71');
+            renderMainApp();
+            return true;
+        }
+        showToast('Username atau password salah!', '#e74c3c');
+        return false;
+    }
+    
+    function logoutUser() { currentUser = null; cart = []; localStorage.removeItem('currentUser'); renderAuthPage(); showToast('Anda telah logout', '#3498db'); }
+    
+    function updateUserBalance(newBalance) {
+        if(!currentUser) return;
+        currentUser.balance = newBalance;
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let index = users.findIndex(u => u.username === currentUser.username);
+        if(index !== -1) { users[index].balance = newBalance; localStorage.setItem('users', JSON.stringify(users)); localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+        renderMainApp();
+    }
+    
+    function updateUserProfile(phone, email) {
+        if(!currentUser) return;
+        currentUser.phone = phone; currentUser.email = email;
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let index = users.findIndex(u => u.username === currentUser.username);
+        if(index !== -1) { users[index].phone = phone; users[index].email = email; localStorage.setItem('users', JSON.stringify(users)); localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+        showToast('Profil berhasil diperbarui!', '#2ecc71');
+        renderMainApp();
+    }
+    
+    function addDepositHistory(amount, transactionId, status) {
+        if(!currentUser) return;
+        currentUser.depositHistory = currentUser.depositHistory || [];
+        currentUser.depositHistory.unshift({ id: transactionId, amount, status, date: new Date().toISOString() });
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let index = users.findIndex(u => u.username === currentUser.username);
+        if(index !== -1) { users[index].depositHistory = currentUser.depositHistory; localStorage.setItem('users', JSON.stringify(users)); localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+    }
+    
+    function addPurchaseHistory(product, uid, password) {
+        if(!currentUser) return;
+        currentUser.purchaseHistory = currentUser.purchaseHistory || [];
+        currentUser.purchaseHistory.unshift({ productId: product.id, accountId: product.account_id, uid, password, price: product.price, date: new Date().toISOString() });
+        let users = JSON.parse(localStorage.getItem('users') || '[]');
+        let index = users.findIndex(u => u.username === currentUser.username);
+        if(index !== -1) { users[index].purchaseHistory = currentUser.purchaseHistory; localStorage.setItem('users', JSON.stringify(users)); localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+    }
+
+    // Transaction
+    function generateTransactionId() { return 'DEP' + Date.now() + Math.random().toString(36).substr(2, 6).toUpperCase(); }
+    
+    function createDepositTransaction(amount) {
+        let transaction = { id: generateTransactionId(), amount, status: 'pending', qrisString: QRIS_MERCHANT_BASE, createdAt: new Date().toISOString(), username: currentUser.username };
+        let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        transactions.unshift(transaction);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        addDepositHistory(amount, transaction.id, 'pending');
+        currentTransaction = transaction;
+        return transaction;
+    }
+    
+    function confirmDepositManually(transactionId) {
+        let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        let index = transactions.findIndex(t => t.id === transactionId);
+        if(index !== -1 && transactions[index].status === 'pending') {
+            transactions[index].status = 'success';
+            localStorage.setItem('transactions', JSON.stringify(transactions));
+            let amount = transactions[index].amount;
+            let newBalance = (currentUser.balance || 0) + amount;
+            updateUserBalance(newBalance);
+            if(currentUser.depositHistory) {
+                let histIndex = currentUser.depositHistory.findIndex(h => h.id === transactionId);
+                if(histIndex !== -1) currentUser.depositHistory[histIndex].status = 'success';
+                let users = JSON.parse(localStorage.getItem('users') || '[]');
+                let userIndex = users.findIndex(u => u.username === currentUser.username);
+                if(userIndex !== -1) users[userIndex].depositHistory = currentUser.depositHistory;
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+            }
+            if(currentTransaction && currentTransaction.id === transactionId) currentTransaction.status = 'success';
+            return true;
+        }
+        return false;
+    }
+
+    // Purchase Flow
+    function checkout() {
+        if(cart.length === 0) { showToast('Keranjang kosong!', '#f39c12'); return; }
+        
+        for(let item of cart) {
+            let product = PRODUCTS.find(p => p.id === item.id);
+            if(!product || product.stock < item.quantity) {
+                showToast(`Stok ${product?.account_id || 'produk'} tidak mencukupi! Tersisa ${product?.stock || 0}`, '#e74c3c');
+                return;
+            }
+        }
+        
+        const total = getCartTotal();
+        if((currentUser.balance || 0) < total) {
+            showToast(`Saldo tidak cukup! Butuh ${formatRupiah(total)}. Silakan deposit.`, '#e74c3c');
+            closeCartSidebar();
+            openDepositModal();
+            return;
+        }
+        
+        let newBalance = (currentUser.balance || 0) - total;
+        updateUserBalance(newBalance);
+        
+        for(let item of cart) {
+            let product = PRODUCTS.find(p => p.id === item.id);
+            if(product) {
+                for(let i = 0; i < item.quantity; i++) {
+                    reduceStock(product.id);
+                    addPurchaseHistory(product, product.uid, product.password);
+                }
+            }
+        }
+        
+        cart = [];
+        updateCartBadge();
+        saveCartToLocal();
+        closeCartSidebar();
+        showToast(`Pembelian berhasil! Cek di profil`, '#2ecc71');
+        renderMainApp();
+    }
+
+    function openCartSidebar() {
+        document.getElementById('cartOverlay').classList.add('active');
+        document.getElementById('cartSidebar').classList.add('active');
+        renderCartSidebar();
+    }
+    
+    function closeCartSidebar() {
+        document.getElementById('cartOverlay').classList.remove('active');
+        document.getElementById('cartSidebar').classList.remove('active');
+    }
+    
+    function renderCartSidebar() {
+        let container = document.getElementById('cartItemsContainer');
+        if(!container) return;
+        if(cart.length === 0) container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);padding:2rem;">Keranjang kosong</p>';
+        else {
+            container.innerHTML = cart.map(item => {
+                let product = PRODUCTS.find(p => p.id === item.id);
+                let maxStock = product ? product.stock + item.quantity : item.quantity;
+                return `
+                <div class="cart-item">
+                    <div class="cart-item-info"><div class="cart-item-id">${item.account_id}</div><div class="cart-item-price">${formatRupiah(item.price)}</div></div>
+                    <div class="cart-item-qty">
+                        <button class="qty-btn" onclick="updateQuantity(${item.id}, -1)">-</button>
+                        <span style="min-width:25px;text-align:center;color:white;">${item.quantity}</span>
+                        <button class="qty-btn" onclick="updateQuantity(${item.id}, 1)" ${item.quantity >= maxStock ? 'disabled style="opacity:0.5;"' : ''}>+</button>
+                        <button class="qty-btn" style="border-color:#e74c3c;" onclick="removeFromCart(${item.id})"><i class="fas fa-trash" style="font-size:0.7rem;"></i></button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+        document.getElementById('cartTotalAmount').innerText = formatRupiah(getCartTotal());
+    }
+
+    // Deposit Modal
+    function openDepositModal(optionalProduct = null) {
+        let modal = document.getElementById('depositModal');
+        let step1 = document.getElementById('depositStep1');
+        let step2 = document.getElementById('depositStep2');
+        step1.style.display = 'block';
+        step2.style.display = 'none';
+        document.getElementById('depositAmount').value = '';
+        document.getElementById('qrcode').innerHTML = '';
+        modal.classList.add('active');
+        window.pendingProduct = optionalProduct;
+    }
+    
+    function closeDepositModal() {
+        document.getElementById('depositModal').classList.remove('active');
+        currentTransaction = null;
+        window.pendingProduct = null;
+    }
+    
+    function generateDeposit() {
+        let amount = parseInt(document.getElementById('depositAmount').value);
+        if(isNaN(amount) || amount < 10000) { showToast('Minimal deposit Rp10.000', '#f39c12'); return; }
+        let transaction = createDepositTransaction(amount);
+        document.getElementById('depositStep1').style.display = 'none';
+        document.getElementById('depositStep2').style.display = 'block';
+        document.getElementById('qrcode').innerHTML = '';
+        new QRCode(document.getElementById('qrcode'), { text: transaction.qrisString, width: 200, height: 200, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+        document.getElementById('transactionInfo').innerHTML = `<strong>ID Transaksi:</strong> ${transaction.id}<br><strong>Nominal:</strong> ${formatRupiah(transaction.amount)}<br><strong>Status:</strong> <span style="color:#f39c12;">Menunggu Konfirmasi</span><br><br><span style="font-size:0.7rem;">⚠️ Scan QRIS di atas, lalu transfer sesuai nominal: ${formatRupiah(amount)}</span>`;
+        let waMessage = `Halo Admin, saya ${currentUser.username} sudah melakukan deposit via QRIS.%0A%0AID Transaksi: ${transaction.id}%0ANominal: Rp${transaction.amount.toLocaleString()}%0A%0ABukti transfer terlampir.`;
+        document.getElementById('whatsappBtn').href = `https://wa.me/${ADMIN_WHATSAPP}?text=${waMessage}`;
+    }
+    
+    function checkManualConfirmation() {
+        if(!currentTransaction) { showToast('Tidak ada transaksi aktif', '#e74c3c'); return; }
+        if(currentTransaction.status === 'success') { showToast(`Deposit ${formatRupiah(currentTransaction.amount)} sudah dikonfirmasi!`, '#2ecc71'); closeDepositModal(); renderMainApp(); return; }
+        showToast('Silakan kirim bukti transfer ke WhatsApp Admin', '#3498db');
+    }
+
+    function showCredentials(product) {
+        let modal = document.getElementById('credentialsModal');
+        let content = document.getElementById('credentialsContent');
+        content.innerHTML = `<div class="credentials-box"><p><strong>✅ Pembelian Berhasil!</strong></p><p><strong>Account ID:</strong> ${product.account_id}</p><p><strong>UID:</strong> ${product.uid}</p><p><strong>Password:</strong> ${product.password}</p><p style="font-size:0.7rem; margin-top:0.5rem;">Simpan data ini dengan aman.</p></div><button onclick="closeCredentialsModal()" class="btn-primary">Tutup</button>`;
+        modal.classList.add('active');
+    }
+    
+    function closeCredentialsModal() { document.getElementById('credentialsModal').classList.remove('active'); }
+
+    // Edit Profile
+    function openEditProfileModal() { let modal = document.getElementById('editProfileModal'); document.getElementById('editPhone').value = currentUser.phone || ''; document.getElementById('editEmail').value = currentUser.email || ''; modal.classList.add('active'); }
+    function closeEditProfileModal() { document.getElementById('editProfileModal').classList.remove('active'); }
+    function saveProfileEdit() { let phone = document.getElementById('editPhone').value; let email = document.getElementById('editEmail').value; updateUserProfile(phone, email); closeEditProfileModal(); }
+
+    // Render Pages
+    function changePage(page) { currentPage = page; renderMainApp(); }
+    function togglePasswordVisibility() { showPassword = !showPassword; renderMainApp(); }
+
+    function renderAuthPage() {
+        document.getElementById('app').innerHTML = `
+            <div style="display:flex;justify-content:center;align-items:center;min-height:100vh;">
+                <div style="background:var(--bg-card); border-radius:1.5rem; padding:1.5rem; width:100%; max-width:380px; border:1px solid var(--border-color);">
+                    <h2 style="text-align:center;margin-bottom:1rem;background:linear-gradient(135deg,#4ecdc4,#2c7da0);-webkit-background-clip:text;background-clip:text;color:transparent;">🏪 IDRare</h2>
+                    <div id="authForm">
+                        <input type="text" id="loginUsername" placeholder="Username" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+                        <input type="password" id="loginPassword" placeholder="Password" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+                        <button onclick="handleLogin()" class="btn-primary" style="margin-top:0.5rem;">Login</button>
+                        <p onclick="showRegister()" style="text-align:center;margin-top:1rem;color:var(--text-secondary);cursor:pointer;">Belum punya akun? Daftar</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    function showRegister() {
+        document.getElementById('authForm').innerHTML = `
+            <input type="text" id="regUsername" placeholder="Username" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <input type="password" id="regPassword" placeholder="Password" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <input type="tel" id="regPhone" placeholder="Nomor HP (opsional)" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <input type="email" id="regEmail" placeholder="Email (opsional)" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <button onclick="handleRegister()" class="btn-primary" style="margin-top:0.5rem;">Daftar</button>
+            <p onclick="showLogin()" style="text-align:center;margin-top:1rem;color:var(--text-secondary);cursor:pointer;">Sudah punya akun? Login</p>
+        `;
+    }
+    
+    function showLogin() {
+        document.getElementById('authForm').innerHTML = `
+            <input type="text" id="loginUsername" placeholder="Username" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <input type="password" id="loginPassword" placeholder="Password" style="width:100%;padding:0.8rem;margin:0.5rem 0;border:1px solid var(--border-color);border-radius:0.8rem;background:var(--bg-secondary);color:white;">
+            <button onclick="handleLogin()" class="btn-primary" style="margin-top:0.5rem;">Login</button>
+            <p onclick="showRegister()" style="text-align:center;margin-top:1rem;color:var(--text-secondary);cursor:pointer;">Belum punya akun? Daftar</p>
+        `;
+    }
+    
+    function handleLogin() { let username = document.getElementById('loginUsername').value; let password = document.getElementById('loginPassword').value; if(username && password) loginUser(username, password); else showToast('Isi username dan password!', '#e74c3c'); }
+    function handleRegister() { let username = document.getElementById('regUsername').value; let password = document.getElementById('regPassword').value; let phone = document.getElementById('regPhone').value; let email = document.getElementById('regEmail').value; if(username && password) registerUser(username, password, phone, email); else showToast('Isi username dan password!', '#e74c3c'); }
+
+    function renderMainApp() {
+        let balance = currentUser?.balance || 0;
+        let history = currentUser?.depositHistory || [];
+        let purchases = currentUser?.purchaseHistory || [];
+        let totalCartItems = cart.reduce((sum, i) => sum + i.quantity, 0);
+        
+        let productsHtml = PRODUCTS.map((p, idx) => {
+            let isSoldOut = p.stock <= 0;
+            return `
+            <div class="product-card ${isSoldOut ? 'sold-out' : ''}" style="animation-delay: ${idx * 0.03}s">
+                <div class="product-info">
+                    <div class="product-id">
+                        ${p.account_id}
+                        ${isSoldOut ? '<span class="stock-badge stock-soldout">✗ SOLD OUT</span>' : '<span class="stock-badge stock-available">✓ Tersedia</span>'}
+                    </div>
+                    <div class="product-price">${formatRupiah(p.price)}</div>
+                </div>
+                <button class="add-cart-btn ${isSoldOut ? 'disabled' : ''}" 
+                    onclick="event.stopPropagation(); ${!isSoldOut ? `addToCart(${JSON.stringify(p).replace(/"/g, '&quot;')})` : ''}" 
+                    ${isSoldOut ? 'disabled' : ''}>
+                    <i class="fas fa-cart-plus"></i>
+                </button>
+            </div>
+        `}).join('');
+        
+        let historyHtml = history.length === 0 ? '<p style="text-align:center;color:var(--text-secondary);padding:1rem;">Belum ada deposit</p>' : history.map(h => `<div class="history-item">${h.id} - ${formatRupiah(h.amount)} - <span class="${h.status === 'success' ? 'status-success' : 'status-pending'}">${h.status}</span></div>`).join('');
+        let purchasesHtml = purchases.length === 0 ? '<p style="text-align:center;color:var(--text-secondary);padding:1rem;">Belum ada pembelian</p>' : purchases.map(p => `<div class="history-item">ID: ${p.accountId} - ${formatRupiah(p.price)} - ${new Date(p.date).toLocaleDateString()}</div>`).join('');
+        let showPasswordText = showPassword ? currentUser.password : '••••••••';
+        
+        document.getElementById('app').innerHTML = `
+            <div class="container">
+                <div class="navbar-top">
+                    <div class="logo"><h1>🏪 IDRare</h1><span>Premium Account Store</span></div>
+                    <div style="display:flex;align-items:center;gap:0.5rem;">
+                        <div class="balance-card"><i class="fas fa-coins"></i> ${formatRupiah(balance)}</div>
+                        <div class="cart-icon" onclick="openCartSidebar()"><i class="fas fa-shopping-cart"></i><span class="cart-badge" id="cartBadge">${totalCartItems}</span></div>
+                        <div class="user-avatar" onclick="changePage('profile')"><i class="fas fa-user"></i></div>
+                    </div>
+                </div>
+                
+                <div id="page-home" style="display:${currentPage === 'home' ? 'block' : 'none'}"><div class="product-grid">${productsHtml}</div></div>
+                
+                <div id="page-deposit" style="display:${currentPage === 'deposit' ? 'block' : 'none'}">
+                    <div style="background:var(--bg-card);border-radius:1rem;padding:1rem;border:1px solid var(--border-color);">
+                        <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);"><i class="fas fa-qrcode"></i> Riwayat Deposit</h3>
+                        <div class="history-list">${historyHtml}</div>
+                        <button class="btn-primary" onclick="openDepositModal()" style="margin-top:0.8rem;">Deposit Baru</button>
+                    </div>
+                </div>
+                
+                <div id="page-profile" style="display:${currentPage === 'profile' ? 'block' : 'none'}">
+                    <div style="background:var(--bg-card);border-radius:1rem;padding:1rem;border:1px solid var(--border-color);">
+                        <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);"><i class="fas fa-user-circle"></i> Profil Saya</h3>
+                        <div class="profile-field"><label>Username</label><div class="value">${currentUser.username}</div></div>
+                        <div class="profile-field"><label>Password</label><div class="value"><span>${showPasswordText}</span><button class="toggle-password" onclick="togglePasswordVisibility()"><i class="fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}"></i></button></div></div>
+                        <div class="profile-field"><label>Nomor HP</label><div class="value">${currentUser.phone || '-'}</div></div>
+                        <div class="profile-field"><label>Email</label><div class="value">${currentUser.email || '-'}</div></div>
+                        <div class="profile-field"><label>Member Sejak</label><div class="value">${new Date(currentUser.createdAt).toLocaleDateString()}</div></div>
+                        <button class="btn-secondary" onclick="openEditProfileModal()"><i class="fas fa-edit"></i> Edit Profil</button>
+                        <button class="btn-outline" onclick="changePage('purchase-history')"><i class="fas fa-history"></i> Riwayat Pembelian</button>
+                        <button class="btn-outline" onclick="logoutUser()" style="border-color:#e74c3c;color:#e74c3c;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                    </div>
+                </div>
+                
+                <div id="page-purchase-history" style="display:${currentPage === 'purchase-history' ? 'block' : 'none'}">
+                    <div style="background:var(--bg-card);border-radius:1rem;padding:1rem;border:1px solid var(--border-color);">
+                        <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);"><i class="fas fa-shopping-bag"></i> Riwayat Pembelian</h3>
+                        <div class="history-list">${purchasesHtml}</div>
+                        <button class="btn-outline" onclick="changePage('profile')" style="margin-top:0.8rem;">Kembali</button>
+                    </div>
+                </div>
+                
+                <div id="page-about" style="display:${currentPage === 'about' ? 'block' : 'none'}">
+                    <div style="background:var(--bg-card);border-radius:1rem;padding:1rem;border:1px solid var(--border-color);">
+                        <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);"><i class="fas fa-info-circle"></i> Tentang IDRare</h3>
+                        <div class="about-content"><p>IDRare adalah platform jual beli akun premium terpercaya.</p><p style="margin-top:0.5rem;">Versi: 3.0.0</p><p>✅ 11 ID Rare harga Rp5.000</p><p>✅ Sistem stok otomatis (1 ID = 1 pembeli)</p></div>
+                        <button class="btn-outline" onclick="changePage('home')" style="margin-top:0.8rem;">Kembali</button>
+                    </div>
+                </div>
+                
+                <div id="page-contact" style="display:${currentPage === 'contact' ? 'block' : 'none'}">
+                    <div style="background:var(--bg-card);border-radius:1rem;padding:1rem;border:1px solid var(--border-color);">
+                        <h3 style="margin-bottom:0.8rem;font-size:1rem;color:var(--text-primary);"><i class="fas fa-headset"></i> Hubungi Kami</h3>
+                        <div class="contact-item"><i class="fab fa-whatsapp"></i> <span>${ADMIN_WHATSAPP}</span></div>
+                        <div class="contact-item"><i class="fas fa-envelope"></i> <span>${ADMIN_EMAIL}</span></div>
+                        <div class="contact-item"><i class="fab fa-instagram"></i> <span>${ADMIN_INSTAGRAM}</span></div>
+                        <button class="btn-primary" onclick="window.open('https://wa.me/${ADMIN_WHATSAPP}', '_blank')"><i class="fab fa-whatsapp"></i> Chat Admin</button>
+                    </div>
+                </div>
+                
+                <div class="bottom-nav">
+                    <div class="nav-item ${currentPage === 'home' ? 'active' : ''}" onclick="changePage('home')"><i class="fas fa-home"></i><span>Beranda</span></div>
+                    <div class="nav-item ${currentPage === 'deposit' ? 'active' : ''}" onclick="changePage('deposit')"><i class="fas fa-wallet"></i><span>Deposit</span></div>
+                    <div class="nav-item ${currentPage === 'contact' ? 'active' : ''}" onclick="changePage('contact')"><i class="fas fa-headset"></i><span>Kontak</span></div>
+                    <div class="nav-item ${currentPage === 'about' ? 'active' : ''}" onclick="changePage('about')"><i class="fas fa-info-circle"></i><span>Tentang</span></div>
+                    <div class="nav-item ${currentPage === 'profile' ? 'active' : ''}" onclick="changePage('profile')"><i class="fas fa-user"></i><span>Profil</span></div>
+                </div>
+            </div>
+            
+            <div class="cart-overlay" id="cartOverlay" onclick="closeCartSidebar()"></div>
+            <div class="cart-sidebar" id="cartSidebar">
+                <div class="cart-header"><h3><i class="fas fa-shopping-bag"></i> Keranjang</h3><i class="fas fa-times" onclick="closeCartSidebar()"></i></div>
+                <div class="cart-items" id="cartItemsContainer"></div>
+                <div class="cart-total"><span>Total</span><span id="cartTotalAmount"></span></div>
+                <button class="btn-checkout" onclick="checkout()"><i class="fas fa-credit-card"></i> Checkout</button>
+                <button class="btn-clear" onclick="cart=[]; updateCartBadge(); saveCartToLocal(); renderCartSidebar();">Kosongkan</button>
+            </div>
+            
+            <div class="modal" id="depositModal">
+                <div class="modal-content">
+                    <i class="fas fa-qrcode" style="font-size:2rem;color:#4ecdc4;"></i>
+                    <h3>Deposit QRIS</h3>
+                    <div id="depositStep1">
+                        <p style="font-size:0.8rem;color:var(--text-secondary);">Minimal deposit <strong style="color:#4ecdc4;">Rp10.000</strong></p>
+                        <input type="number" id="depositAmount" class="amount-input" placeholder="Masukkan nominal">
+                        <button onclick="generateDeposit()" class="btn-primary">Generate QRIS</button>
+                    </div>
+                    <div id="depositStep2" style="display:none;">
+                        <div class="qris-box"><div id="qrcode"></div><div id="transactionInfo" style="font-size:0.7rem; margin-top:0.5rem;color:var(--text-secondary);"></div></div>
+                        <a href="#" id="whatsappBtn" class="btn-whatsapp" target="_blank"><i class="fab fa-whatsapp"></i> Konfirmasi ke Admin</a>
+                        <button onclick="checkManualConfirmation()" class="btn-secondary">Saya Sudah Transfer</button>
+                    </div>
+                    <button onclick="closeDepositModal()" style="background:none;border:none;margin-top:0.8rem;color:var(--text-secondary);cursor:pointer;">Tutup</button>
+                </div>
+            </div>
+            
+            <div class="modal" id="credentialsModal"><div class="modal-content" id="credentialsContent"></div></div>
+            
+            <div class="modal" id="editProfileModal">
+                <div class="modal-content">
+                    <h3><i class="fas fa-edit"></i> Edit Profil</h3>
+                    <div class="profile-field"><label>Nomor HP</label><input type="tel" id="editPhone" style="width:100%;padding:0.7rem;border-radius:0.8rem;border:1px solid var(--border-color);background:var(--bg-secondary);color:white;"></div>
+                    <div class="profile-field"><label>Email</label><input type="email" id="editEmail" style="width:100%;padding:0.7rem;border-radius:0.8rem;border:1px solid var(--border-color);background:var(--bg-secondary);color:white;"></div>
+                    <button onclick="saveProfileEdit()" class="btn-primary">Simpan</button>
+                    <button onclick="closeEditProfileModal()" class="btn-outline" style="margin-top:0.5rem;">Batal</button>
+                </div>
+            </div>
+        `;
+        
+        updateCartBadge();
+        if(document.getElementById('cartItemsContainer')) renderCartSidebar();
+    }
+
+    // Admin Functions
+    window.enableAdmin = function() {
+        let transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        let pending = transactions.filter(t => t.status === 'pending');
+        if(pending.length === 0) { showToast('Tidak ada transaksi pending', '#f39c12'); return; }
+        let msg = '📋 DAFTAR TRANSAKSI PENDING:\n\n';
+        pending.forEach((t, i) => { msg += `${i+1}. ID: ${t.id}\n   User: ${t.username}\n   Nominal: Rp${t.amount.toLocaleString()}\n\n`; });
+        msg += 'Ketik confirmDeposit("ID_TRANSAKSI") untuk konfirmasi.';
+        alert(msg);
+        console.table(pending);
+    };
+    
+    window.confirmDeposit = function(transactionId) {
+        let success = confirmDepositManually(transactionId);
+        if(success) { showToast(`Transaksi ${transactionId} dikonfirmasi!`, '#2ecc71'); renderMainApp(); if(currentTransaction && currentTransaction.id === transactionId) closeDepositModal(); } 
+        else showToast('Transaksi tidak ditemukan', '#e74c3c');
+    };
+    
+    window.resetStocks = function() {
+        for(let product of PRODUCTS) {
+            product.stock = 1;
+        }
+        saveStocksToLocal();
+        renderMainApp();
+        showToast('Semua stok telah direset!', '#2ecc71');
+    };
+    
+    window.viewStocks = function() {
+        let stockList = PRODUCTS.map(p => `${p.account_id}: ${p.stock > 0 ? 'Tersedia' : 'Habis'}`).join('\n');
+        alert('📦 STATUS STOK:\n\n' + stockList);
+    };
+    
+    window.updateQuantity = updateQuantity;
+    window.removeFromCart = removeFromCart;
+    window.addToCart = addToCart;
+    window.checkout = checkout;
+    window.openCartSidebar = openCartSidebar;
+    window.closeCartSidebar = closeCartSidebar;
+    window.openDepositModal = openDepositModal;
+    window.closeDepositModal = closeDepositModal;
+    window.generateDeposit = generateDeposit;
+    window.checkManualConfirmation = checkManualConfirmation;
+    window.closeCredentialsModal = closeCredentialsModal;
+    window.handleLogin = handleLogin;
+    window.handleRegister = handleRegister;
+    window.showRegister = showRegister;
+    window.showLogin = showLogin;
+    window.logoutUser = logoutUser;
+    window.changePage = changePage;
+    window.togglePasswordVisibility = togglePasswordVisibility;
+    window.openEditProfileModal = openEditProfileModal;
+    window.closeEditProfileModal = closeEditProfileModal;
+    window.saveProfileEdit = saveProfileEdit;
+    
+    loadStocksFromLocal();
+    
+    let savedUser = localStorage.getItem('currentUser');
+    if(savedUser) { currentUser = JSON.parse(savedUser); loadCart(); renderMainApp(); } 
+    else renderAuthPage();
+    
+    console.log('✅ Sistem stok otomatis siap!');
+    console.log('📦 Total 11 ID Rare harga Rp5.000');
+    console.log('📋 Untuk admin: enableAdmin() - lihat transaksi pending');
+    console.log('🔄 Untuk reset stok: resetStocks()');
+    console.log('📦 Untuk lihat stok: viewStocks()');
+</script>
+</body>
+</html>
+```
